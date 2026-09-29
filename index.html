@@ -10,7 +10,7 @@
             margin: 0;
             padding: 0;
             background-color: #141414;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,25 +18,16 @@
             color: white;
             overflow: hidden;
         }
-        /* Овальный контейнер под форму вытянутого экрана смартфона */
         .table-container {
             position: relative;
-            width: 92vw;
-            height: 120vw; /* Сделали зону выше, чтобы поместились топ и боттом стулья */
-            max-width: 350px;
-            max-height: 480px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        /* Сам суконный стол теперь ОВАЛЬНЫЙ */
         .poker-table {
-            width: 85%;
-            height: 60%; /* Сузили по вертикали, превратив в идеальный покерный овал */
             background: radial-gradient(circle, #116934 0%, #093c1d 100%);
-            border: 10px solid #5a3d28;
-            border-radius: 100px; /* Скругление под овал */
-            box-shadow: 0 12px 28px rgba(0,0,0,0.6), inset 0 0 40px rgba(0,0,0,0.6);
+            border: 8px solid #5a3d28;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 0 35px rgba(0,0,0,0.6);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -45,62 +36,71 @@
         .pot-zone {
             text-align: center;
             background: rgba(0,0,0,0.7);
-            padding: 8px 14px;
-            border-radius: 12px;
+            padding: 6px 12px;
+            border-radius: 10px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 11px;
             border: 1px solid #ffd700;
         }
-        /* Стулья игроков */
         .player-seat {
             position: absolute;
-            width: 68px;
-            height: 68px;
-            background: #222222;
+            width: 60px;
+            height: 60px;
+            background: #222;
             border: 3px solid #555;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 10px;
-            box-shadow: 0 6px 10px rgba(0,0,0,0.5);
-            cursor: pointer;
+            font-size: 9px;
             z-index: 2;
-            transition: transform 0.1s, border-color 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
             text-align: center;
             box-sizing: border-box;
             padding: 2px;
         }
-        .player-seat:active { transform: scale(0.92); }
-        /* Когда стул успешно занят */
-        .player-seat.active { 
-            border-color: #00ff66; 
-            background: #14351f; 
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.4);
-        }
-        .player-seat .chips { color: #ffd700; font-weight: bold; font-size: 9px; margin-top: 2px; }
-        .player-seat span { max-width: 62px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+        .player-seat.active { border-color: #00ff66; background: #14351f; }
+        .player-seat .chips { color: #ffd700; font-weight: bold; font-size: 8px; }
+        .player-seat span { max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* Идеальное овальное распределение мест на экране телефона */
-        .seat-1 { top: 10%; left: 50%; transform: translateX(-50%); } /* Верхний стул - теперь точно внутри экрана */
-        .seat-2 { top: 22%; right: 0%; }
-        .seat-3 { top: 50%; right: -6%; transform: translateY(-50%); }
-        .seat-4 { bottom: 22%; right: 0%; }
-        .seat-5 { bottom: 10%; left: 50%; transform: translateX(-50%); } /* Нижний стул - на безопасном расстоянии от системной шторки */
-        .seat-6 { bottom: 22%; left: 0%; }
-        .seat-7 { top: 50%; left: -6%; transform: translateY(-50%); }
-        .seat-8 { top: 22%; left: 0%; }
+        /* ================= ВЕРТИКАЛЬНЫЙ РЕЖИМ (ПОРТРЕТ) ================= */
+        @media (orientation: portrait) {
+            .table-container { width: 85vw; height: 130vw; max-width: 340px; max-height: 520px; }
+            .poker-table { position: absolute; top: 15%; left: 5%; width: 90%; height: 70%; border-radius: 80px; }
+            .seat-1 { top: 4%; left: 50%; transform: translateX(-50%); } 
+            .seat-2 { top: 22%; right: -5%; }
+            .seat-3 { top: 50%; right: -12%; transform: translateY(-50%); }
+            .seat-4 { bottom: 22%; right: -5%; }
+            .seat-5 { bottom: 4%; left: 50%; transform: translateX(-50%); } 
+            .seat-6 { bottom: 22%; left: -5%; }
+            .seat-7 { top: 50%; left: -12%; transform: translateY(-50%); }
+            .seat-8 { top: 22%; left: -5%; }
+        }
+
+        /* ================= ГОРИЗОНТАЛЬНЫЙ РЕЖИМ (АЛЬБОМ) ================= */
+        @media (orientation: landscape) {
+            .table-container { width: 130vw; height: 80vw; max-width: 540px; max-height: 320px; }
+            .poker-table { position: absolute; top: 5%; left: 15%; width: 70%; height: 90%; border-radius: 120px; }
+            .seat-1 { top: -12%; left: 50%; transform: translateX(-50%); } 
+            .seat-2 { top: 10%; right: 4%; }
+            .seat-3 { top: 50%; right: 4%; transform: translateY(-50%); }
+            .seat-4 { bottom: 10%; right: 4%; }
+            .seat-5 { bottom: -12%; left: 50%; transform: translateX(-50%); } 
+            .seat-6 { bottom: 10%; left: 4%; }
+            .seat-7 { top: 50%; left: 4%; transform: translateY(-50%); }
+            .seat-8 { top: 10%; left: 4%; }
+        }
     </style>
 </head>
 <body>
 
     <div class="table-container">
         <div class="poker-table">
-            <div class="pot-zone" id="pot">БАНК: 0<br><span style="color:#ffd700;font-size:11px;">Блайнды: 10 / 20</span></div>
+            <div class="pot-zone">БАНК: 0<br><span style="color:#ffd700;">10 / 20</span></div>
         </div>
 
-        <!-- 8 овально-распределенных мест -->
         <div class="player-seat seat-1" id="s1" onclick="takeSeat(1)"><span>Пусто</span></div>
         <div class="player-seat seat-2" id="s2" onclick="takeSeat(2)"><span>Пусто</span></div>
         <div class="player-seat seat-3" id="s3" onclick="takeSeat(3)"><span>Пусто</span></div>
@@ -117,19 +117,20 @@
         tg.expand();
 
         const user = tg.initDataUnsafe?.user;
-        const name = user ? user.first_name : "Я";
+        const name = user ? user.first_name : "Игрок";
 
         function takeSeat(seatNum) {
             const seat = document.getElementById(`s${seatNum}`);
-            
-            // Если место свободное
             if (seat.querySelector('span').innerText === "Пусто") {
-                // Визуально занимаем стул прямо на экране
                 seat.classList.add('active');
                 seat.innerHTML = `<span>${name}</span><div class="chips">1000 ф.</div>`;
                 
-                // Передаем данные нашему Python-боту в фоновом режиме
-                tg.sendData(JSON.stringify({action: "join_table", seat: seatNum, name: name}));
+                try {
+                    // Возвращаем стандартную отправку, но оборачиваем в проверку
+                    tg.sendData(JSON.stringify({action: "join_table", seat: seatNum, name: name}));
+                } catch (e) {
+                    alert("Ошибка отправки боту: " + e.message);
+                }
             }
         }
     </script>
