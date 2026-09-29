@@ -72,11 +72,14 @@
             box-sizing: border-box;
             padding: 2px;
         }
+        /* Стиль для успешного выделения занятого места */
         .player-seat.active { 
             border-color: #00ff66 !important; 
             background: #14351f !important; 
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.4);
         }
-        .player-seat .chips { color: #ffd700; font-weight: bold; font-size: 8px; }
+        .player-seat .chips { color: #ffd700; font-weight: bold; font-size: 8px; margin-top: 2px; }
+        .player-seat span { max-width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
 
         .seat-1 { top: 4%; left: 50%; transform: translateX(-50%); } 
         .seat-2 { top: 22%; right: -8%; }
@@ -95,46 +98,60 @@
             <div class="pot-zone">БАНК: 0<br><span style="color:#ffd700;">10 / 20</span></div>
         </div>
 
-        <!-- Передаем нажатие напрямую через простую функцию -->
-        <div class="player-seat seat-1" id="s1" onclick="clickSeat(1)"><span>Пусто</span></div>
-        <div class="player-seat seat-2" id="s2" onclick="clickSeat(2)"><span>Пусто</span></div>
-        <div class="player-seat seat-3" id="s3" onclick="clickSeat(3)"><span>Пусто</span></div>
-        <div class="player-seat seat-4" id="s4" onclick="clickSeat(4)"><span>Пусто</span></div>
-        <div class="player-seat seat-5" id="s5" onclick="clickSeat(5)"><span>Пусто</span></div>
-        <div class="player-seat seat-6" id="s6" onclick="clickSeat(6)"><span>Пусто</span></div>
-        <div class="player-seat seat-7" id="s7" onclick="clickSeat(7)"><span>Пусто</span></div>
-        <div class="player-seat seat-8" id="s8" onclick="clickSeat(8)"><span>Пусто</span></div>
+        <div class="player-seat seat-1" id="s1" onclick="takeSeat(1)"><span>Пусто</span></div>
+        <div class="player-seat seat-2" id="s2" onclick="takeSeat(2)"><span>Пусто</span></div>
+        <div class="player-seat seat-3" id="s3" onclick="takeSeat(3)"><span>Пусто</span></div>
+        <div class="player-seat seat-4" id="s4" onclick="takeSeat(4)"><span>Пусто</span></div>
+        <div class="player-seat seat-5" id="s5" onclick="takeSeat(5)"><span>Пусто</span></div>
+        <div class="player-seat seat-6" id="s6" onclick="takeSeat(6)"><span>Пусто</span></div>
+        <div class="player-seat seat-7" id="s7" onclick="takeSeat(7)"><span>Пусто</span></div>
+        <div class="player-seat seat-8" id="s8" onclick="takeSeat(8)"><span>Пусто</span></div>
     </div>
 
     <script>
-        // Инициализация Telegram
-        var tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        function clickSeat(seatNum) {
-            // ЭТАП 1: Проверяем, работает ли вообще клик на телефоне
-            // Телефон должен выдать всплывающее окно
-            alert("Вы нажали на стул №" + seatNum);
+        const user = tg.initDataUnsafe?.user;
+        const name = user ? user.first_name : "Игрок";
+        
+        let selectedSeat = null;
 
-            // ЭТАП 2: Визуальное изменение стула
-            var seat = document.getElementById("s" + seatNum);
-            seat.classList.add("active");
+        function takeSeat(seatNum) {
+            const seat = document.getElementById(`s${seatNum}`);
             
-            var userName = "Игрок";
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                userName = tg.initDataUnsafe.user.first_name;
-            }
-            
-            seat.innerHTML = "<span>" + userName + "</span><div class='chips'>1000 ф.</div>";
+            // Проверяем, свободно ли место
+            if (seat.querySelector('span').innerText === "Пусто" || seat.classList.contains('active')) {
+                
+                // Если до этого уже выбирали другое место — сбрасываем его обратно в "Пусто"
+                if (selectedSeat && selectedSeat !== seatNum) {
+                    const oldSeat = document.getElementById(`s${selectedSeat}`);
+                    oldSeat.classList.remove('active');
+                    oldSeat.innerHTML = "<span>Пусто</span>";
+                }
 
-            // ЭТАП 3: Отправка данных боту
-            try {
-                tg.sendData(JSON.stringify({action: "join_table", seat: seatNum, name: userName}));
-            } catch(e) {
-                alert("Ошибка Telegram: " + e.message);
+                selectedSeat = seatNum;
+                
+                // Визуально красим текущий стул в зеленый цвет и пишем имя
+                seat.classList.add('active');
+                seat.innerHTML = `<span>${name}</span><div class="chips">1000 ф.</div>`;
+                
+                // Активируем системную кнопку Telegram в самом низу экрана для отправки данных
+                tg.MainButton.text = `ПОДТВЕРДИТЬ МЕСТО №${seatNum}`;
+                tg.MainButton.show();
             }
         }
+
+        // Ловим нажатие на кнопку «ПОДТВЕРДИТЬ МЕСТО» внизу экрана телефона
+        tg.onEvent('mainButtonClicked', function(){
+            if (selectedSeat) {
+                // Передаем данные боту в чат
+                tg.sendData(JSON.stringify({action: "join_table", seat: selectedSeat, name: name}));
+                tg.MainButton.hide();
+                tg.close(); // Автоматически закроем стол после успешного выбора
+            }
+        });
     </script>
 </body>
 </html>
