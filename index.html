@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- Жесткий запрет кэша на уровне браузера телефона -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Telegram Poker Club</title>
+    <!-- Обманываем кэш Telegram, добавляя маркер версии прямо в скрипт -->
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -72,7 +76,6 @@
             box-sizing: border-box;
             padding: 2px;
         }
-        /* Стиль для успешного выделения занятого места */
         .player-seat.active { 
             border-color: #00ff66 !important; 
             background: #14351f !important; 
@@ -109,47 +112,50 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
+        // Инициализируем WebApp принудительно
+        var tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        const user = tg.initDataUnsafe?.user;
-        const name = user ? user.first_name : "Игрок";
-        
-        let selectedSeat = null;
+        var selectedSeat = null;
+
+        // Самая простая текстовая проверка имени, чтобы скрипт точно не упал
+        var name = "Игрок";
+        try {
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                name = tg.initDataUnsafe.user.first_name;
+            }
+        } catch(e) { }
 
         function takeSeat(seatNum) {
-            const seat = document.getElementById(`s${seatNum}`);
+            var seat = document.getElementById("s" + seatNum);
             
-            // Проверяем, свободно ли место
-            if (seat.querySelector('span').innerText === "Пусто" || seat.classList.contains('active')) {
+            // Если в поле написано Пусто
+            if (seat.innerText.indexOf("Пусто") !== -1 || seat.classList.contains('active')) {
                 
-                // Если до этого уже выбирали другое место — сбрасываем его обратно в "Пусто"
                 if (selectedSeat && selectedSeat !== seatNum) {
-                    const oldSeat = document.getElementById(`s${selectedSeat}`);
+                    var oldSeat = document.getElementById("s" + selectedSeat);
                     oldSeat.classList.remove('active');
                     oldSeat.innerHTML = "<span>Пусто</span>";
                 }
 
                 selectedSeat = seatNum;
                 
-                // Визуально красим текущий стул в зеленый цвет и пишем имя
+                // КРАСИМ СТУЛ
                 seat.classList.add('active');
-                seat.innerHTML = `<span>${name}</span><div class="chips">1000 ф.</div>`;
+                seat.innerHTML = "<span>" + name + "</span><div class='chips'>1000 ф.</div>";
                 
-                // Активируем системную кнопку Telegram в самом низу экрана для отправки данных
-                tg.MainButton.text = `ПОДТВЕРДИТЬ МЕСТО №${seatNum}`;
+                // ВКЛЮЧАЕМ КНОПКУ ТЕЛЕГРАМА
+                tg.MainButton.text = "ПОДТВЕРДИТЬ МЕСТО №" + seatNum;
                 tg.MainButton.show();
             }
         }
 
-        // Ловим нажатие на кнопку «ПОДТВЕРДИТЬ МЕСТО» внизу экрана телефона
         tg.onEvent('mainButtonClicked', function(){
             if (selectedSeat) {
-                // Передаем данные боту в чат
                 tg.sendData(JSON.stringify({action: "join_table", seat: selectedSeat, name: name}));
                 tg.MainButton.hide();
-                tg.close(); // Автоматически закроем стол после успешного выбора
+                tg.close();
             }
         });
     </script>
