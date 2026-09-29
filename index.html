@@ -2,16 +2,16 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Telegram Poker Club</title>
-    <!-- Подключаем официальный скрипт Telegram Mini Apps -->
+    <!-- Официальный скрипт Telegram Mini Apps -->
     <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a1a;
-            font-family: Arial, sans-serif;
+            background-color: #141414;
+            font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -19,65 +19,84 @@
             color: white;
             overflow: hidden;
         }
-        .poker-table {
-            width: 90vw;
-            max-width: 800px;
-            height: 50vw;
-            max-height: 450px;
-            background: radial-gradient(circle, #0f6330 0%, #08361a 100%);
-            border: 15px solid #4a2f13;
-            border-radius: 200px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 50px rgba(0,0,0,0.6);
+        /* Адаптивный контейнер стола */
+        .table-container {
             position: relative;
+            width: 90vw;
+            height: 85vw;
+            max-width: 360px;
+            max-height: 340px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Сам суконный стол */
+        .poker-table {
+            width: 75%;
+            height: 75%;
+            background: radial-gradient(circle, #116934 0%, #093c1d 100%);
+            border: 8px solid #5a3d28;
+            border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 0 30px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
         }
         .pot-zone {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.4);
-            padding: 10px 20px;
-            border-radius: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 6px 12px;
+            border-radius: 12px;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 12px;
             border: 1px solid #ffd700;
         }
+        /* Новые аккуратные круглые места игроков */
         .player-seat {
             position: absolute;
-            width: 80px;
-            height: 80px;
-            background: #2e2e2e;
-            border: 3px solid #555;
+            width: 65px;
+            height: 65px;
+            background: #262626;
+            border: 2px solid #666;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 11px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            font-size: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
             cursor: pointer;
-            transition: 0.2s;
+            z-index: 2;
+            transition: transform 0.1s, border-color 0.2s;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 2px;
         }
-        .player-seat:hover { background: #3e3e3e; }
-        .player-seat.active { border-color: #00ff66; }
-        .player-seat .chips { color: #ffd700; font-weight: bold; margin-top: 4px; }
+        .player-seat:active { transform: scale(0.95); }
+        .player-seat.active { border-color: #00ff66; background: #1e2d24; }
+        .player-seat .chips { color: #ffd700; font-weight: bold; font-size: 9px; margin-top: 2px; }
+        .player-seat span { max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .seat-1 { top: -40px; left: 50%; transform: translateX(-50%); }
-        .seat-2 { top: 10px; right: 10px; }
-        .seat-3 { top: 50%; right: -40px; transform: translateY(-50%); }
-        .seat-4 { bottom: 10px; right: 10px; }
-        .seat-5 { bottom: -40px; left: 50%; transform: translateX(-50%); }
-        .seat-6 { bottom: 10px; left: 10px; }
-        .seat-7 { top: 50%; left: -40px; transform: translateY(-50%); }
-        .seat-8 { top: 10px; left: 10px; }
+        /* Идеальное математическое распределение 8 мест строго по кругу */
+        .seat-1 { top: 0%; left: 50%; transform: translate(-50%, -20%); }
+        .seat-2 { top: 12%; right: 4%; }
+        .seat-3 { top: 50%; right: -12%; transform: translateY(-50%); }
+        .seat-4 { bottom: 12%; right: 4%; }
+        .seat-5 { bottom: 0%; left: 50%; transform: translate(-50%, 20%); }
+        .seat-6 { bottom: 12%; left: 4%; }
+        .seat-7 { top: 50%; left: -12%; transform: translateY(-50%); }
+        .seat-8 { top: 12%; left: 4%; }
     </style>
 </head>
 <body>
 
-    <div class="poker-table">
-        <div class="pot-zone" id="pot">БАНК: 0 [Блайнды: 10/20]</div>
+    <div class="table-container">
+        <div class="poker-table">
+            <div class="pot-zone" id="pot">БАНК: 0<br><span style="color:#aaa;font-size:10px;">Блайнд: 10</span></div>
+        </div>
 
-        <!-- 8 интерактивных мест -->
+        <!-- 8 ровных круглых стульев -->
         <div class="player-seat seat-1" id="s1" onclick="takeSeat(1)"><span>Пусто</span></div>
         <div class="player-seat seat-2" id="s2" onclick="takeSeat(2)"><span>Пусто</span></div>
         <div class="player-seat seat-3" id="s3" onclick="takeSeat(3)"><span>Пусто</span></div>
@@ -89,24 +108,30 @@
     </div>
 
     <script>
-        // Инициализируем Telegram Web App
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем приложение на весь экран телефона
+        tg.ready();
+        tg.expand();
 
-        // Функция, которая срабатывает при нажатии на стул
+        // Берем данные авторизации из Telegram
+        const initData = tg.initData; 
+        const user = tg.initDataUnsafe?.user;
+        const name = user ? user.first_name : "Игрок";
+
         function takeSeat(seatNum) {
-            // Получаем имя игрока из его профиля в Telegram
-            const user = tg.initDataUnsafe?.user;
-            const name = user ? user.first_name : "Игрок";
-            
             const seat = document.getElementById(`s${seatNum}`);
             
-            // Если место пустое — занимаем его
             if (seat.innerText === "Пусто") {
                 seat.classList.add('active');
                 seat.innerHTML = `<span>${name}</span><div class="chips">1000 ф.</div>`;
                 
-                // Отправляем весточку нашему Python-боту, что игрок сел
+                // Всплывающая подсказка в самом Telegram для подтверждения клика
+                tg.showPopup({
+                    title: 'Покерный стол',
+                    message: `Вы заняли место №${seatNum}! Закройте окно стола, чтобы увидеть статус в чате.`,
+                    buttons: [{type: 'ok'}]
+                });
+
+                // Отправляем структурированные данные обратно боту через безопасный метод
                 tg.sendData(JSON.stringify({action: "join_table", seat: seatNum, name: name}));
             }
         }
