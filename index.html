@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- Добавляем жесткий запрет на кэширование для телефона -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Telegram Poker Club</title>
     <script src="https://telegram.org"></script>
     <style>
@@ -44,8 +48,8 @@
         }
         .player-seat {
             position: absolute;
-            width: 60px;
-            height: 60px;
+            width: 58px;
+            height: 58px;
             background: #222;
             border: 3px solid #555;
             border-radius: 50%;
@@ -63,31 +67,31 @@
         }
         .player-seat.active { border-color: #00ff66; background: #14351f; }
         .player-seat .chips { color: #ffd700; font-weight: bold; font-size: 8px; }
-        .player-seat span { max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .player-seat span { max-width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* ================= ВЕРТИКАЛЬНЫЙ РЕЖИМ (ПОРТРЕТ) ================= */
+        /* ================= ВЕРТИКАЛЬНЫЙ РЕЖИМ (СДЕЛАЛИ СТОЛ УЖЕ) ================= */
         @media (orientation: portrait) {
-            .table-container { width: 85vw; height: 130vw; max-width: 340px; max-height: 520px; }
-            .poker-table { position: absolute; top: 15%; left: 5%; width: 90%; height: 70%; border-radius: 80px; }
+            .table-container { width: 75vw; height: 130vw; max-width: 310px; max-height: 520px; }
+            .poker-table { position: absolute; top: 15%; left: 5%; width: 90%; height: 70%; border-radius: 85px; }
             .seat-1 { top: 4%; left: 50%; transform: translateX(-50%); } 
-            .seat-2 { top: 22%; right: -5%; }
-            .seat-3 { top: 50%; right: -12%; transform: translateY(-50%); }
-            .seat-4 { bottom: 22%; right: -5%; }
+            .seat-2 { top: 22%; right: -8%; }
+            .seat-3 { top: 50%; right: -16%; transform: translateY(-50%); }
+            .seat-4 { bottom: 22%; right: -8%; }
             .seat-5 { bottom: 4%; left: 50%; transform: translateX(-50%); } 
-            .seat-6 { bottom: 22%; left: -5%; }
-            .seat-7 { top: 50%; left: -12%; transform: translateY(-50%); }
-            .seat-8 { top: 22%; left: -5%; }
+            .seat-6 { bottom: 22%; left: -8%; }
+            .seat-7 { top: 50%; left: -16%; transform: translateY(-50%); }
+            .seat-8 { top: 22%; left: -8%; }
         }
 
-        /* ================= ГОРИЗОНТАЛЬНЫЙ РЕЖИМ (АЛЬБОМ) ================= */
+        /* ================= ГОРИЗОНТАЛЬНЫЙ РЕЖИМ (ТОЖЕ ПОДКОРРЕКТИРОВАЛИ) ================= */
         @media (orientation: landscape) {
-            .table-container { width: 130vw; height: 80vw; max-width: 540px; max-height: 320px; }
+            .table-container { width: 110vw; height: 80vw; max-width: 480px; max-height: 320px; }
             .poker-table { position: absolute; top: 5%; left: 15%; width: 70%; height: 90%; border-radius: 120px; }
-            .seat-1 { top: -12%; left: 50%; transform: translateX(-50%); } 
+            .seat-1 { top: -14%; left: 50%; transform: translateX(-50%); } 
             .seat-2 { top: 10%; right: 4%; }
             .seat-3 { top: 50%; right: 4%; transform: translateY(-50%); }
             .seat-4 { bottom: 10%; right: 4%; }
-            .seat-5 { bottom: -12%; left: 50%; transform: translateX(-50%); } 
+            .seat-5 { bottom: -14%; left: 50%; transform: translateX(-50%); } 
             .seat-6 { bottom: 10%; left: 4%; }
             .seat-7 { top: 50%; left: 4%; transform: translateY(-50%); }
             .seat-8 { top: 10%; left: 4%; }
@@ -118,21 +122,38 @@
 
         const user = tg.initDataUnsafe?.user;
         const name = user ? user.first_name : "Игрок";
+        
+        let selectedSeat = null;
 
         function takeSeat(seatNum) {
             const seat = document.getElementById(`s${seatNum}`);
             if (seat.querySelector('span').innerText === "Пусто") {
+                
+                if (selectedSeat) {
+                    document.getElementById(`s${selectedSeat}`).classList.remove('active');
+                    document.getElementById(`s${selectedSeat}`).querySelector('span').innerText = "Пусто";
+                    if(document.getElementById(`s${selectedSeat}`).querySelector('.chips')) {
+                        document.getElementById(`s${selectedSeat}`).querySelector('.chips').remove();
+                    }
+                }
+
+                selectedSeat = seatNum;
                 seat.classList.add('active');
                 seat.innerHTML = `<span>${name}</span><div class="chips">1000 ф.</div>`;
                 
-                try {
-                    // Возвращаем стандартную отправку, но оборачиваем в проверку
-                    tg.sendData(JSON.stringify({action: "join_table", seat: seatNum, name: name}));
-                } catch (e) {
-                    alert("Ошибка отправки боту: " + e.message);
-                }
+                // Включаем нижнюю кнопку подтверждения в Telegram
+                tg.MainButton.text = `ПОДТВЕРДИТЬ МЕСТО №${seatNum}`;
+                tg.MainButton.show();
             }
         }
+
+        tg.onEvent('mainButtonClicked', function(){
+            if (selectedSeat) {
+                // Передаем данные боту
+                tg.sendData(JSON.stringify({action: "join_table", seat: selectedSeat, name: name}));
+                tg.MainButton.hide();
+            }
+        });
     </script>
 </body>
 </html>
