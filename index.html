@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Poker Club</title>
+    <!-- Подключаем официальный скрипт Telegram Mini Apps -->
+    <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
@@ -17,7 +19,6 @@
             color: white;
             overflow: hidden;
         }
-        /* Покерный стол */
         .poker-table {
             width: 90vw;
             max-width: 800px;
@@ -29,7 +30,6 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 50px rgba(0,0,0,0.6);
             position: relative;
         }
-        /* Общий банк в центре */
         .pot-zone {
             position: absolute;
             top: 50%;
@@ -42,7 +42,6 @@
             font-size: 18px;
             border: 1px solid #ffd700;
         }
-        /* Места для 8 игроков по кругу */
         .player-seat {
             position: absolute;
             width: 80px;
@@ -56,11 +55,13 @@
             align-items: center;
             font-size: 11px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: 0.2s;
         }
+        .player-seat:hover { background: #3e3e3e; }
         .player-seat.active { border-color: #00ff66; }
         .player-seat .chips { color: #ffd700; font-weight: bold; margin-top: 4px; }
 
-        /* Координаты для 8 мест вокруг овального стола */
         .seat-1 { top: -40px; left: 50%; transform: translateX(-50%); }
         .seat-2 { top: 10px; right: 10px; }
         .seat-3 { top: 50%; right: -40px; transform: translateY(-50%); }
@@ -74,18 +75,41 @@
 <body>
 
     <div class="poker-table">
-        <div class="pot-zone">💰 БАНК: 0</div>
+        <div class="pot-zone" id="pot">БАНК: 0 [Блайнды: 10/20]</div>
 
-        <!-- 8 мест за столом -->
-        <div class="player-seat seat-1 active"><span>Игрок 1</span><div class="chips">1000 🪙</div></div>
-        <div class="player-seat seat-2"><span>Пусто</span></div>
-        <div class="player-seat seat-3"><span>Пусто</span></div>
-        <div class="player-seat seat-4"><span>Пусто</span></div>
-        <div class="player-seat seat-5"><span>Пусто</span></div>
-        <div class="player-seat seat-6"><span>Пусто</span></div>
-        <div class="player-seat seat-7"><span>Пусто</span></div>
-        <div class="player-seat seat-8"><span>Пусто</span></div>
+        <!-- 8 интерактивных мест -->
+        <div class="player-seat seat-1" id="s1" onclick="takeSeat(1)"><span>Пусто</span></div>
+        <div class="player-seat seat-2" id="s2" onclick="takeSeat(2)"><span>Пусто</span></div>
+        <div class="player-seat seat-3" id="s3" onclick="takeSeat(3)"><span>Пусто</span></div>
+        <div class="player-seat seat-4" id="s4" onclick="takeSeat(4)"><span>Пусто</span></div>
+        <div class="player-seat seat-5" id="s5" onclick="takeSeat(5)"><span>Пусто</span></div>
+        <div class="player-seat seat-6" id="s6" onclick="takeSeat(6)"><span>Пусто</span></div>
+        <div class="player-seat seat-7" id="s7" onclick="takeSeat(7)"><span>Пусто</span></div>
+        <div class="player-seat seat-8" id="s8" onclick="takeSeat(8)"><span>Пусто</span></div>
     </div>
 
+    <script>
+        // Инициализируем Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Раскрываем приложение на весь экран телефона
+
+        // Функция, которая срабатывает при нажатии на стул
+        function takeSeat(seatNum) {
+            // Получаем имя игрока из его профиля в Telegram
+            const user = tg.initDataUnsafe?.user;
+            const name = user ? user.first_name : "Игрок";
+            
+            const seat = document.getElementById(`s${seatNum}`);
+            
+            // Если место пустое — занимаем его
+            if (seat.innerText === "Пусто") {
+                seat.classList.add('active');
+                seat.innerHTML = `<span>${name}</span><div class="chips">1000 ф.</div>`;
+                
+                // Отправляем весточку нашему Python-боту, что игрок сел
+                tg.sendData(JSON.stringify({action: "join_table", seat: seatNum, name: name}));
+            }
+        }
+    </script>
 </body>
 </html>
